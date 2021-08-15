@@ -170,8 +170,13 @@ void finance::calculateOneYearOnCurrentPlan()
     this->amountOfMortage -= this->penaltyFreeMortageReduction;
     this->availableCash = 0;
     for (int i = 0; i < 12; i++) {
-        month listElement = *std::prev(this->listOfMonths.end(), i);
-        this->availableCash += listElement.availableCash;
+        if (i == 0) {
+            this->availableCash += this->listOfMonths.back().availableCash;
+        }
+        else {
+            month listElement = *std::prev(this->listOfMonths.end(), i);
+            this->availableCash += listElement.availableCash;
+        }
     }
     this->availableCash = this->availableCash/12;
     this->valueOfHouse += this->valueOfHouse * (this->realEstateYearlyYield / 100);
