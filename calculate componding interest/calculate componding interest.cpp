@@ -299,7 +299,9 @@ void doTheMath(finance& financialSituation) {
 }
 
 void showYearly(finance& financialSituation) {
+    int currentYear = 1;
     std::cout << "|" << std::left 
+                    << std::setw(2) << "Y" << "|"
                     << std::setw(12) << "Savings" <<"|" 
                     << std::setw(12) << "Portofolio" << "|"
                     << std::setw(12) << "Monthly cash" <<"|"
@@ -314,6 +316,7 @@ void showYearly(finance& financialSituation) {
         
 
         std::cout << std::setprecision(2) << std::fixed << "|" << std::left
+            << std::setw(2) << currentYear << "|"
             << std::setw(12) << thisYear.amountInSavingsAccount << "|"
             << std::setw(12) << thisYear.amountInvested << "|"
             << std::setw(12) << thisYear.availableCash << "|"
@@ -326,7 +329,7 @@ void showYearly(finance& financialSituation) {
             std::cout << "Retire!";
         }
         std::cout << std::endl;
-
+        ++currentYear;
     }
     std::cout << std::endl;
 }
@@ -336,8 +339,10 @@ void showMonthly(finance& financialSituation) {
     std::list<year>::iterator it;
     it = financialSituation.getListOfYears().begin();
     int currentMonth = 0;
+    int year = 1;
 
     std::cout << "|" << std::left
+        << std::setw(2) << "Y" << "|"
         << std::setw(12) << "Savings" << "|"
         << std::setw(12) << "Portofolio" << "|"
         << std::setw(12) << "Monthly cash" << "|"
@@ -346,10 +351,10 @@ void showMonthly(finance& financialSituation) {
         << std::setw(12) << "Net worth" << "|"
         << std::setw(12) << "inflation NW" << "|"
         << std::setw(12) << "inflation LQ" << "|"
-        << std::setw(2) << "Y" << "|"
         << std::endl;
     for (month& thisMonth: financialSituation.getListOfMonths()) {
         std::cout << std::setprecision(2) << std::fixed << "|" << std::left
+            << std::setw(2) <<" " << "|"
             << std::setw(12) << thisMonth.amountInSavingsAccount << "|"
             << std::setw(12) << thisMonth.amountInvested << "|"
             << std::setw(12) << thisMonth.availableCash << "|"
@@ -362,6 +367,7 @@ void showMonthly(finance& financialSituation) {
             currentMonth = 0;
             //showYear
             std::cout << std::setprecision(2) << std::fixed << "|" << std::left
+                << std::setw(2) << year << "|"
                 << std::setw(12) << it->amountInSavingsAccount << "|"
                 << std::setw(12) << it->amountInvested << "|"
                 << std::setw(12) << it->availableCash << "|"
@@ -369,13 +375,12 @@ void showMonthly(finance& financialSituation) {
                 << std::setw(12) << it->valueOfHouse << "|"
                 << std::setw(12) << it->netWorth << "|"
                 << std::setw(12) << it->buyingPowerLostDueToInflation << "|"
-                << std::setw(12) << it->buyingPowerLostInActiva << "|"
-                << std::setw(2) << "*" << "|";
+                << std::setw(12) << it->buyingPowerLostInActiva << "|";
             if (it->canStopWorking) {
                 std::cout << "Retire!";
             }
             std::cout << std::endl;
-            
+            ++year;
             ++it;
         }
 
