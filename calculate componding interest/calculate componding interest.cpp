@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <iomanip>
 
 struct month {
     double amountInSavingsAccount;
@@ -15,6 +16,9 @@ struct year {
     double amountOfMortage;
     double availableCash;
     double valueOfHouse;
+    double netWorth;
+    double buyingPowerLostDueToInflation;
+    double buyingPowerLostInActiva;
 };
 
 class finance {
@@ -35,6 +39,9 @@ public:
         this->netYearlyIncome = 0;
         this->availableCash = 0;
         this->yearsLeftOnMorgage = 0;
+        this->netWorth = 0;
+        this->buyingPowerLostDueToInflation = 0;
+        this->buyingPowerLostInActiva = 0;
     };
     void setFinancialPicture(
         double monthlyInvestmentPortofolio,
@@ -54,6 +61,8 @@ public:
     );
     void calculateOneMonthOnCurrentPlan();
     void calculateOneYearOnCurrentPlan();
+    std::list<year>& getListOfYears();
+    std::list<month>& getListOfMonths();
 
  private:
      double monthlyInvestmentPortofolio;
@@ -71,6 +80,9 @@ public:
      double netYearlyIncome;
      double availableCash;
      double yearsLeftOnMorgage;
+     double netWorth;
+     double buyingPowerLostDueToInflation;
+     double buyingPowerLostInActiva;
      std::list<month> listOfMonths;
      std::list<year> listOfYears;
 };
@@ -96,7 +108,7 @@ void askAndGetAnswerFromConsole(std::string question, int& answer) {
         std::cout << question << std::endl;
         std::getline(std::cin, myNumberString);
         if (isValidInt(myNumberString)) {
-            answer = std::stod(myNumberString);
+            answer = std::stoi(myNumberString);
             std::cout << std::endl;
             numberEnterd = true;
         }
@@ -146,11 +158,13 @@ void finance::calculateOneMonthOnCurrentPlan()
     double avarageMonthlyIncome = netYearlyIncome / 12;
     double thisMonthsMortageBill = ((this->amountOfMortage + (this->amountOfMortage * (this->interestOnMortage / 100))) / this->yearsLeftOnMorgage) / 12;
     
-    this->availableCash = avarageMonthlyIncome - (thisMonthsMortageBill + this->monthlyInvestmentPortofolio + this->monthlyInvestmentSavingsAccount);
+    this->availableCash = avarageMonthlyIncome - (thisMonthsMortageBill + this->monthlyInvestmentPortofolio + this->monthlyInvestmentSavingsAccount+(this->penaltyFreeMortageReduction/12));
     this->amountInSavingsAccount += this->monthlyInvestmentSavingsAccount;
     this->amountInvested += this->monthlyInvestmentPortofolio;
-    this->amountOfMortage -= (this->amountOfMortage / this->yearsLeftOnMorgage) / 12;
-
+    if (this->amountOfMortage > 0) {
+        this->amountOfMortage -= (this->amountOfMortage / this->yearsLeftOnMorgage) / 12;
+        if (this->amountOfMortage < 0) { this->amountOfMortage = 0; }
+    }
     this->listOfMonths.push_back({
      amountInSavingsAccount,
      amountInvested,
@@ -167,7 +181,10 @@ void finance::calculateOneYearOnCurrentPlan()
     }
     this->amountInSavingsAccount += amountInSavingsAccount * (this->yearlyInterestSavingsAccount / 100);
     this->amountInvested += this->amountInvested * (this->yearlyAverageYieldInvestment / 100);
-    this->amountOfMortage -= this->penaltyFreeMortageReduction;
+    if (this->amountOfMortage > 0) {
+        this->amountOfMortage -= this->penaltyFreeMortageReduction;
+        if (this->amountOfMortage < 0) { this->amountOfMortage = 0; }
+    }
     this->availableCash = 0;
     for (int i = 0; i < 12; i++) {
         if (i == 0) {
@@ -180,14 +197,34 @@ void finance::calculateOneYearOnCurrentPlan()
     }
     this->availableCash = this->availableCash/12;
     this->valueOfHouse += this->valueOfHouse * (this->realEstateYearlyYield / 100);
+
+    this->netWorth = amountInSavingsAccount + amountInvested + availableCash + valueOfHouse - amountOfMortage;
+    this->buyingPowerLostDueToInflation = netWorth * (this->yearlyInflation / 100);
+    this->buyingPowerLostInActiva = (amountInSavingsAccount + amountInvested)* (this->yearlyInflation / 100);
+
     this->listOfYears.push_back({
         this->amountInSavingsAccount,
         this->amountInvested,
         this->amountOfMortage,
         this->availableCash,
-        this->valueOfHouse
+        this->valueOfHouse,
+        this->netWorth,
+        this->buyingPowerLostDueToInflation,
+        this->buyingPowerLostInActiva
         });
     this->yearsLeftOnMorgage -= 1;
+
+    
+}
+
+std::list<year>& finance::getListOfYears()
+{
+    return this->listOfYears;
+}
+
+std::list<month>& finance::getListOfMonths()
+{
+    return this->listOfMonths;
 }
 
 void getStartingValuesFromUser(finance& financialSituation){
@@ -253,24 +290,94 @@ void doTheMath(finance& financialSituation) {
     }
 }
 
-void showYearly() {
+void showYearly(finance& financialSituation) {
+    std::cout << "|" << std::left 
+                    << std::setw(12) << "Savings" <<"|" 
+                    << std::setw(12) << "Portofolio" << "|"
+                    << std::setw(12) << "Monthly cash" <<"|"
+                    << std::setw(12) << "mortgage" << "|"
+                    << std::setw(12) << "House value" <<"|" 
+                    << std::setw(12) << "Net worth" << "|"
+                    << std::setw(12) << "inflation NW" << "|"
+                    << std::setw(12) << "inflation LQ" << "|"
+              << std::endl;
+    for (year& thisYear : financialSituation.getListOfYears()) {
+
+       
+
+        std::cout << std::setprecision(2) << std::fixed <<  "|" << std::left
+            << std::setw(12) << thisYear.amountInSavingsAccount << "|"
+            << std::setw(12) << thisYear.amountInvested << "|"
+            << std::setw(12) << thisYear.availableCash << "|"
+            << std::setw(12) << thisYear.amountOfMortage << "|"
+            << std::setw(12) << thisYear.valueOfHouse << "|" 
+            << std::setw(12) << thisYear.netWorth << "|"
+            << std::setw(12) << thisYear.buyingPowerLostDueToInflation << "|"
+            << std::setw(12) << thisYear.buyingPowerLostInActiva << "|"
+        << std::endl;
+
+    }
+    std::cout << std::endl;
+}
+
+void showMonthly(finance& financialSituation) {
+
+    std::list<year>::iterator it;
+    it = financialSituation.getListOfYears().begin();
+    int currentMonth = 0;
+
+    std::cout << "|" << std::left
+        << std::setw(12) << "Savings" << "|"
+        << std::setw(12) << "Portofolio" << "|"
+        << std::setw(12) << "Monthly cash" << "|"
+        << std::setw(12) << "mortgage" << "|"
+        << std::setw(12) << "House value" << "|"
+        << std::setw(12) << "Net worth" << "|"
+        << std::setw(12) << "inflation NW" << "|"
+        << std::setw(12) << "inflation LQ" << "|"
+        << std::setw(2) << "Y" << "|"
+        << std::endl;
+    for (month& thisMonth: financialSituation.getListOfMonths()) {
+        std::cout << std::setprecision(2) << std::fixed << "|" << std::left
+            << std::setw(12) << thisMonth.amountInSavingsAccount << "|"
+            << std::setw(12) << thisMonth.amountInvested << "|"
+            << std::setw(12) << thisMonth.availableCash << "|"
+            << std::setw(12) << thisMonth.amountOfMortage << "|"
+       << std::endl;
+        if (currentMonth < 11) {
+            ++currentMonth;
+        }
+        else {
+            currentMonth = 0;
+            //showYear
+            std::cout << std::setprecision(2) << std::fixed << "|" << std::left
+                << std::setw(12) << it->amountInSavingsAccount << "|"
+                << std::setw(12) << it->amountInvested << "|"
+                << std::setw(12) << it->availableCash << "|"
+                << std::setw(12) << it->amountOfMortage << "|"
+                << std::setw(12) << it->valueOfHouse << "|"
+                << std::setw(12) << it->netWorth << "|"
+                << std::setw(12) << it->buyingPowerLostDueToInflation << "|"
+                << std::setw(12) << it->buyingPowerLostInActiva << "|"
+                << std::setw(2) << "*" << "|"
+            << std::endl;
+            ++it;
+        }
+
+    }
 
 }
 
-void showMonthly() {
-
-}
-
-void determenHowToShowResultsAndShowThem() {
+void determenHowToShowResultsAndShowThem(finance& financialSituation) {
     int userChoise = 0;
     while(userChoise != 3){
         askAndGetAnswerFromConsole("Press 1 to show results by year, 2 to show results by month and enter 3 to exit", userChoise);
         switch (userChoise) {
         case 1:
-            showYearly();
+            showYearly(financialSituation);
             break;
         case 2:
-            showMonthly();
+            showMonthly(financialSituation);
             break;
         default:
             break;
@@ -284,7 +391,7 @@ int main()
     displayWelcomeText();
     getStartingValuesFromUser(financialSituation);
     doTheMath(financialSituation);
-    determenHowToShowResultsAndShowThem();
+    determenHowToShowResultsAndShowThem(financialSituation);
     system("pause");
 }
 
