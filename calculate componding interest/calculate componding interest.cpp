@@ -251,11 +251,11 @@ void getStartingValuesFromUser(finance& financialSituation){
     askAndGetAnswerFromConsole("How much are you planning to invest each month?", monthlyInvestmentPortofolio);
     askAndGetAnswerFromConsole("What is the value of your home:", valueOfHouse);
     askAndGetAnswerFromConsole("What is the avarage yearly value increase on realestate in your area?", realEstateYearlyYield);
-    askAndGetAnswerFromConsole("What is your current mortage", amountOfMortage);
-    askAndGetAnswerFromConsole("What is the interest rate on your mortage", interestOnMortage);
+    askAndGetAnswerFromConsole("What is your current mortgage", amountOfMortage);
+    askAndGetAnswerFromConsole("What is the interest rate on your mortgage (%)", interestOnMortage);
     askAndGetAnswerFromConsole("How many years are left on your mortage", yearsLeftOnMorgage);
     askAndGetAnswerFromConsole("If you have the option to do so penalty free how much do you plan to pay off extra on your mortage each year", penaltyFreeMortageReduction);
-    askAndGetAnswerFromConsole("What is the average yearly inflation in your area", yearlyInflation);
+    askAndGetAnswerFromConsole("What is the average yearly inflation in your area (%)", yearlyInflation);
 
     financialSituation.setFinancialPicture(
         monthlyInvestmentPortofolio,
