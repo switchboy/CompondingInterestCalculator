@@ -19,6 +19,7 @@ struct year {
     double netWorth;
     double buyingPowerLostDueToInflation;
     double buyingPowerLostInActiva;
+    bool canStopWorking;
 };
 
 class finance {
@@ -202,6 +203,11 @@ void finance::calculateOneYearOnCurrentPlan()
     this->buyingPowerLostDueToInflation = netWorth * (this->yearlyInflation / 100);
     this->buyingPowerLostInActiva = (amountInSavingsAccount + amountInvested)* (this->yearlyInflation / 100);
 
+    bool canStopWorking = false;
+    if (netWorth * 0.03f >= this->netYearlyIncome) {
+        canStopWorking = true;
+    }
+
     this->listOfYears.push_back({
         this->amountInSavingsAccount,
         this->amountInvested,
@@ -210,7 +216,8 @@ void finance::calculateOneYearOnCurrentPlan()
         this->valueOfHouse,
         this->netWorth,
         this->buyingPowerLostDueToInflation,
-        this->buyingPowerLostInActiva
+        this->buyingPowerLostInActiva,
+        canStopWorking
         });
     this->yearsLeftOnMorgage -= 1;
 
@@ -304,18 +311,21 @@ void showYearly(finance& financialSituation) {
               << std::endl;
     for (year& thisYear : financialSituation.getListOfYears()) {
 
-       
+        
 
-        std::cout << std::setprecision(2) << std::fixed <<  "|" << std::left
+        std::cout << std::setprecision(2) << std::fixed << "|" << std::left
             << std::setw(12) << thisYear.amountInSavingsAccount << "|"
             << std::setw(12) << thisYear.amountInvested << "|"
             << std::setw(12) << thisYear.availableCash << "|"
             << std::setw(12) << thisYear.amountOfMortage << "|"
-            << std::setw(12) << thisYear.valueOfHouse << "|" 
+            << std::setw(12) << thisYear.valueOfHouse << "|"
             << std::setw(12) << thisYear.netWorth << "|"
             << std::setw(12) << thisYear.buyingPowerLostDueToInflation << "|"
-            << std::setw(12) << thisYear.buyingPowerLostInActiva << "|"
-        << std::endl;
+            << std::setw(12) << thisYear.buyingPowerLostInActiva << "|";
+        if (thisYear.canStopWorking) {
+            std::cout << "Retire!";
+        }
+        std::cout << std::endl;
 
     }
     std::cout << std::endl;
@@ -360,8 +370,12 @@ void showMonthly(finance& financialSituation) {
                 << std::setw(12) << it->netWorth << "|"
                 << std::setw(12) << it->buyingPowerLostDueToInflation << "|"
                 << std::setw(12) << it->buyingPowerLostInActiva << "|"
-                << std::setw(2) << "*" << "|"
-            << std::endl;
+                << std::setw(2) << "*" << "|";
+            if (it->canStopWorking) {
+                std::cout << "Retire!";
+            }
+            std::cout << std::endl;
+            
             ++it;
         }
 
