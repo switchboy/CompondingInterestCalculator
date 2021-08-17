@@ -162,7 +162,12 @@ void finance::calculateOneMonthOnCurrentPlan()
     double avarageMonthlyIncome = netYearlyIncome / 12;
     double thisMonthsMortageBill = ((this->amountOfMortage + (this->amountOfMortage * (this->interestOnMortage / 100))) / this->yearsLeftOnMorgage) / 12;
     
-    this->availableCash = avarageMonthlyIncome - (thisMonthsMortageBill + this->monthlyInvestmentPortofolio + this->monthlyInvestmentSavingsAccount+(this->penaltyFreeMortageReduction/12));
+    if (this->amountOfMortage > this->penaltyFreeMortageReduction/12) {
+        this->availableCash = avarageMonthlyIncome - (thisMonthsMortageBill + this->monthlyInvestmentPortofolio + this->monthlyInvestmentSavingsAccount + (this->penaltyFreeMortageReduction / 12));
+    }
+    else {
+        this->availableCash = avarageMonthlyIncome - (this->monthlyInvestmentPortofolio + this->monthlyInvestmentSavingsAccount + this->amountOfMortage);
+    }
     this->amountInSavingsAccount += this->monthlyInvestmentSavingsAccount;
     this->amountInvested += this->monthlyInvestmentPortofolio;
     if (this->amountOfMortage > 0) {
@@ -202,17 +207,17 @@ void finance::calculateOneYearOnCurrentPlan()
     this->availableCash = this->availableCash/12;
     this->valueOfHouse += this->valueOfHouse * (this->realEstateYearlyYield / 100);
 
-    this->netWorth = amountInSavingsAccount + amountInvested + availableCash + valueOfHouse - amountOfMortage;
-    this->buyingPowerLostDueToInflation = netWorth * (this->yearlyInflation / 100);
+    this->netWorth = (amountInSavingsAccount + amountInvested + availableCash + valueOfHouse) - amountOfMortage;
+    this->buyingPowerLostDueToInflation = this->netWorth * (this->yearlyInflation / 100);
     this->buyingPowerLostInActiva = (amountInSavingsAccount + amountInvested)* (this->yearlyInflation / 100);
 
     bool canStopWorking = false;
-    if (netWorth * 0.03f >= (this->netYearlyIncome - this->firstMonthsMortageBill)) {
+    if (this->netWorth * 0.03f >= (this->netYearlyIncome - this->firstMonthsMortageBill)) {
         canStopWorking = true;
     }
 
     bool canStopWorkingWithMortgage = false;
-    if (netWorth * 0.03f >= (this->netYearlyIncome - ((this->amountOfMortage + (this->amountOfMortage * (this->interestOnMortage / 100))) / this->yearsLeftOnMorgage) / 12)) {
+    if (this->netWorth * 0.03f >= (this->netYearlyIncome - ((this->amountOfMortage + (this->amountOfMortage * (this->interestOnMortage / 100))) / this->yearsLeftOnMorgage) / 12)) {
         canStopWorkingWithMortgage = true;
     }
 
