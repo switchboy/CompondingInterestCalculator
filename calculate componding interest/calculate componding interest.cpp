@@ -285,8 +285,8 @@ void getStartingValuesFromUser(finance& financialSituation){
 void displayWelcomeText() {
     std::cout << "Finance calculator v 0.1" << std::endl;
     std::cout << "Calculate the effect of compounding interest and inflation on buying power in \"Today's money\" over a given number of \n" <<
-        "years. This wil help you eveluate your savings and investment plan." << //" It will note the years from now when you could \n" <<
-        //"expect to retire with your current lifestyle. This will be three percent annualy of your total capital" << 
+        "years. This wil help you eveluate your savings and investment plan. It will note the years from now when you could \n" <<
+        "expect to retire with your current lifestyle. This will be three percent annualy of your total capital" << 
         std::endl << std::endl << std::endl;
 }
 
