@@ -20,6 +20,7 @@ struct year {
     double buyingPowerLostDueToInflation;
     double buyingPowerLostInActiva;
     bool canStopWorking;
+    bool canStopWorkingPayingMortgage;
 };
 
 class finance {
@@ -43,6 +44,7 @@ public:
         this->netWorth = 0;
         this->buyingPowerLostDueToInflation = 0;
         this->buyingPowerLostInActiva = 0;
+        this->firstMonthsMortageBill = ((this->amountOfMortage + (this->amountOfMortage * (this->interestOnMortage / 100))) / this->yearsLeftOnMorgage) / 12;
     };
     void setFinancialPicture(
         double monthlyInvestmentPortofolio,
@@ -84,6 +86,7 @@ public:
      double netWorth;
      double buyingPowerLostDueToInflation;
      double buyingPowerLostInActiva;
+     double firstMonthsMortageBill;
      std::list<month> listOfMonths;
      std::list<year> listOfYears;
 };
@@ -204,8 +207,13 @@ void finance::calculateOneYearOnCurrentPlan()
     this->buyingPowerLostInActiva = (amountInSavingsAccount + amountInvested)* (this->yearlyInflation / 100);
 
     bool canStopWorking = false;
-    if (netWorth * 0.03f >= this->netYearlyIncome) {
+    if (netWorth * 0.03f >= (this->netYearlyIncome - this->firstMonthsMortageBill)) {
         canStopWorking = true;
+    }
+
+    bool canStopWorkingWithMortgage = false;
+    if (netWorth * 0.03f >= (this->netYearlyIncome - ((this->amountOfMortage + (this->amountOfMortage * (this->interestOnMortage / 100))) / this->yearsLeftOnMorgage) / 12)) {
+        canStopWorkingWithMortgage = true;
     }
 
     this->listOfYears.push_back({
@@ -217,7 +225,8 @@ void finance::calculateOneYearOnCurrentPlan()
         this->netWorth,
         this->buyingPowerLostDueToInflation,
         this->buyingPowerLostInActiva,
-        canStopWorking
+        canStopWorking,
+        canStopWorkingWithMortgage
         });
     this->yearsLeftOnMorgage -= 1;
 
@@ -283,10 +292,12 @@ void getStartingValuesFromUser(finance& financialSituation){
 }
 
 void displayWelcomeText() {
-    std::cout << "Finance calculator v 0.1" << std::endl;
+    std::cout << "Finance calculator v 0.2" << std::endl;
     std::cout << "Calculate the effect of compounding interest and inflation on buying power in \"Today's money\" over a given number of \n" <<
         "years. This wil help you eveluate your savings and investment plan. It will note the years from now when you could \n" <<
-        "expect to retire with your current lifestyle. This will be three percent annualy of your total capital" << 
+        "expect to retire with your current lifestyle. This will be when 3% your net worth is equal or more then your current \n  " << 
+        "net income after mortgage payment. Assuming this will be payed off by then, otherwise the remaining mortgage is also \n "<<
+        "added to the net income the 3% needs to match. Note that this only applies when your yield is more then 3%"<<
         std::endl << std::endl << std::endl;
 }
 
@@ -325,7 +336,7 @@ void showYearly(finance& financialSituation) {
             << std::setw(12) << thisYear.netWorth << "|"
             << std::setw(12) << thisYear.buyingPowerLostDueToInflation << "|"
             << std::setw(12) << thisYear.buyingPowerLostInActiva << "|";
-        if (thisYear.canStopWorking) {
+        if ((thisYear.canStopWorking && thisYear.amountOfMortage <= 0) || thisYear.canStopWorkingPayingMortgage) {
             std::cout << "Retire!";
         }
         std::cout << std::endl;
@@ -376,7 +387,7 @@ void showMonthly(finance& financialSituation) {
                 << std::setw(12) << it->netWorth << "|"
                 << std::setw(12) << it->buyingPowerLostDueToInflation << "|"
                 << std::setw(12) << it->buyingPowerLostInActiva << "|";
-            if (it->canStopWorking) {
+            if ((it->canStopWorking && it->amountOfMortage <= 0) || it->canStopWorkingPayingMortgage) {
                 std::cout << "Retire!";
             }
             std::cout << std::endl;
